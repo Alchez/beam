@@ -17,7 +17,7 @@
 		"demand_tab",
 		"warehouse_types",
 		"mobile_tab",
-		"table_tdzr"
+		"routes"
 	],
 	"fields": [
 		{
@@ -88,14 +88,14 @@
 			"label": "Mobile"
 		},
 		{
-			"fieldname": "table_tdzr",
+			"fieldname": "routes",
 			"fieldtype": "Table",
 			"options": "BEAM Mobile Route"
 		}
 	],
 	"index_web_pages_for_search": 1,
 	"links": [],
-	"modified": "2024-10-31 16:35:51.897937",
+	"modified": "2024-11-01 09:35:08.451907",
 	"modified_by": "Administrator",
 	"module": "BEAM",
 	"name": "BEAM Settings",
