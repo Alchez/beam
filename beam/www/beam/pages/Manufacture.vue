@@ -1,5 +1,5 @@
 <template>
-	<Navbar @click="handlePrimaryAction">
+	<Navbar>
 		<template #title>
 			<h1 class="nav-title">Manufacture</h1>
 		</template>
@@ -15,6 +15,8 @@ import { onMounted, ref } from 'vue'
 
 import { useDataStore } from '@/store'
 import type { ListViewItem, WorkOrder } from '@/types'
+
+declare const frappe: any
 
 const items = ref<ListViewItem[]>([])
 const store = useDataStore()
@@ -48,10 +50,6 @@ onMounted(async () => {
 		})
 	})
 })
-
-const handlePrimaryAction = () => {
-	console.log('handle primary action')
-}
 </script>
 
 <style>
