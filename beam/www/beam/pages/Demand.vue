@@ -12,16 +12,15 @@
 </template>
 
 <script setup lang="ts">
-import { Navbar } from '@stonecrop/beam'
 import { useInfiniteScroll } from '@vueuse/core'
 import { ref } from 'vue'
 
-import { useDataStore } from '@/store'
+import { useBeamStore } from '@/stores/beam'
 import type { ListViewItem } from '@/types'
 
 declare const frappe: any
 
-const store = useDataStore()
+const store = useBeamStore()
 const transfer = ref<Partial<ListViewItem>[]>([])
 const canLoadMore = ref(true)
 const page = ref(1)
@@ -37,7 +36,7 @@ useInfiniteScroll(
 
 		// TODO: move this to the server
 		data.forEach(row => {
-			row.count = { count: row.allocated_qty, of: `${row.total_required_qty}` }
+			row.count = { count: row.allocated_qty, of: row.total_required_qty }
 			row.label = `${row.item_code} from ${row.warehouse}`
 			row.linkComponent = 'ListAnchor'
 			row.description = row.parent
@@ -52,7 +51,3 @@ useInfiniteScroll(
 
 // const handlePrimaryAction = () => {}
 </script>
-
-<style scoped>
-@import url('@stonecrop/beam/styles');
-</style>
