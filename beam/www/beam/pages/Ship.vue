@@ -44,6 +44,7 @@ useInfiniteScroll(
 				${row.customer ?? `Customer: ${row.customer}`}
 			`.trim()
 			row.route = `#/delivery-note?id=${row.parent}`
+			ship.value.push(row)
 		})
 
 		page.value++
