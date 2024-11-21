@@ -12,11 +12,11 @@
 	<div>
 		<p>Planned Start: {{ (store.form as WorkOrder).planned_start_date }}</p>
 	</div>
-	<div class="box" v-show="operations.length">
-		<ListView :items="operations" />
-	</div>
 	<div class="box" v-show="items.length">
 		<ListView :items="items" />
+	</div>
+	<div class="box" v-show="operations.length">
+		<ListView :items="operations" />
 	</div>
 	<ControlButtons
 		:onCreate="create"
@@ -50,6 +50,13 @@ onMounted(async () => {
 		route: `#/work_order/${workOrderId}/operation/${operation.name}`,
 	}))
 
+	workOrder.value = {
+		...workOrder.value,
+		product: order.item_name,
+		quantity: order.produced_qty,
+		total: order.qty,
+		complete: order.status === 'Complete',
+	}
 	// get job cards
 	// for (const operation of order.operations) {
 	// 	const jobList = await store.getAll<JobCard[]>('Job Card', {
