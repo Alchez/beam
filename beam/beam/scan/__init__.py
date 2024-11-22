@@ -221,11 +221,14 @@ def get_form_action(barcode_doc: frappe._dict, context: frappe._dict) -> list[di
 			)
 		target.barcode = barcode_doc.barcode
 
+	else:
+		target = frappe._dict(**barcode_doc)
+
 	if not target:
 		return []
 
 	beam_override = frappe.get_hooks("beam_frm")
-
+	print(beam_override)
 	if beam_override:
 		override_doctype = beam_override.get(barcode_doc.doc.doctype)
 		if override_doctype:

@@ -31,7 +31,7 @@ export const useScanStore = defineStore('scan', () => {
 			const action = response[0].action
 
 			const scanHooks = store.scanner.config.client
-			if (scanHooks.length > 0 && action in scanHooks) {
+			if (action in scanHooks) {
 				const path: string = scanHooks[action][0]
 				// call (first) custom built callback registered in hooks
 				fn = path.split('.').reduce((previous, current) => previous[current], window)
