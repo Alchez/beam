@@ -43,3 +43,50 @@ export type ListViewItem = {
 	linkComponent?: string
 	route?: string
 }
+
+export type Demand = {
+	allocated_date: null
+	allocated_qty: number
+	assigned: string
+	bom_no: string
+	company: string
+	creation: Date
+	customer: string
+	delivery_date: null
+	demand: string
+	doctype: string
+	idx: number
+	item_code: string
+	item_warehouse: string
+	key: string
+	modified: null
+	name: string
+	net_required_qty: number
+	parent: string
+	production_item: string
+	status: string
+	stock_uom: string
+	total_required_qty: number
+	warehouse: string
+}
+
+export type Receive = {
+	assigned: null
+	company: string
+	creation: Date
+	doctype: string
+	idx: number
+	item_code: string
+	key: string
+	modified: Date
+	name: string
+	parent: string
+	received_qty: number
+	rejected_qty: number
+	schedule_date: Date
+	status: string
+	stock_qty: number
+	stock_uom: string
+	supplier: string
+	warehouse: string
+}
