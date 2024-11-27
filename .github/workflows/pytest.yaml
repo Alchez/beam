@@ -58,18 +58,27 @@ jobs:
       - name: Install App Dependencies
         run: bash ${{ github.workspace }}/.github/helper/install_dependencies.sh
 
+      - name: Install Python Dependencies
+        working-directory: /home/runner/frappe-bench
+        run: |
+          source env/bin/activate
+          cd apps/beam
+          poetry install
+
       - name: Install Bench Site and Apps
         env:
           MYSQL_HOST: 'localhost'
           MYSQL_PWD: 'admin'
         run: bash ${{ github.workspace }}/.github/helper/install.sh
 
+      - name: Install browsers
+        run: python -m playwright install --with-deps
+
       - name: Run Tests
         working-directory: /home/runner/frappe-bench
         run: |
           source env/bin/activate
           cd apps/beam
-          poetry install
           pytest --cov=beam --cov-report=xml --disable-warnings -s | tee pytest-coverage.txt
 
       - name: Pytest coverage comment
