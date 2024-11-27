@@ -61,7 +61,6 @@ jobs:
       - name: Install Python Dependencies
         working-directory: /home/runner/frappe-bench
         run: |
-          source env/bin/activate
           cd apps/beam
           poetry install
 

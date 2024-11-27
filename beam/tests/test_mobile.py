@@ -1,14 +1,16 @@
 # Copyright (c) 2024, AgriTheory and contributors
 # For license information, please see license.txt
 
+import re
+
 import frappe
 import pytest
-
-from playwright.sync_api import expect
 
 
 @pytest.fixture(scope="function", autouse=True)
 def login(page):
+	page.set_default_timeout(5000)
+
 	base_url = frappe.utils.get_url()
 	page.goto(base_url)
 
@@ -19,17 +21,20 @@ def login(page):
 	yield
 
 
-def test_login(page):
+def test_ship(page):
 	# assert redirection to beam homepage after login
-	base_url = frappe.utils.get_url()
-	expect(page).to_have_url(f"{base_url}/beam#/")
+	page.expect_navigation(url=re.compile("/beam#/"))
 
-	# context = new_context()
-	# new_page = context.new_page()
-	# new_page.goto(invoice_url)
-	# new_page.wait_for_selector("#approve-btn")
-	# approve_button = new_page.query_selector("#approve-btn")
-	# approve_button.click()
-	# new_page.wait_for_selector(".btn-modal-primary")
-	# yes_button = new_page.query_selector(".btn-modal-primary")
-	# yes_button.click()
+	# navigate to ship list page
+	page.get_by_text("Ship").click()
+	page.expect_navigation(url=re.compile("/beam#/ship"))
+
+	# navigate to first purchase order in list
+	page.get_by_role("listitem").first.click()
+	page.expect_navigation(url=re.compile("/beam#/delivery-note/"))
+
+	# TODO: scan barcode
+	barcodes = frappe.get_all(
+		"Item Barcode", filters={"parenttype": "Item", "parent": "Ambrosia Pie"}, pluck="barcode"
+	)
+	assert len(barcodes) > 0
