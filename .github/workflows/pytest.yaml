@@ -2,13 +2,11 @@ name: Pytest CI
 
 on:
   push:
-    branches:
-      - version-14
-      - version-15
+    branches: [ version-15 ]
   pull_request:
 
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
 
     services:
@@ -58,30 +56,29 @@ jobs:
       - name: Install App Dependencies
         run: bash ${{ github.workspace }}/.github/helper/install_dependencies.sh
 
-      - name: Install Python Dependencies
-        working-directory: /home/runner/frappe-bench
-        run: |
-          cd apps/beam
-          poetry install
-
       - name: Install Bench Site and Apps
         env:
           MYSQL_HOST: 'localhost'
           MYSQL_PWD: 'admin'
         run: bash ${{ github.workspace }}/.github/helper/install.sh
 
-      - name: Install browsers
-        run: python -m playwright install --with-deps
-
       - name: Run Tests
         working-directory: /home/runner/frappe-bench
         run: |
           source env/bin/activate
           cd apps/beam
-          pytest --cov=beam --cov-report=xml --disable-warnings -s | tee pytest-coverage.txt
+          poetry install
+          npx playwright install --with-deps
+          pytest --cov=beam --cov-report=xml --disable-warnings -s --tracing=retain-on-failure | tee pytest-coverage.txt
 
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
           pytest-coverage-path: /home/runner/frappe-bench/apps/beam/pytest-coverage.txt
           pytest-xml-coverage-path: /home/runner/frappe-bench/apps/beam/coverage.xml
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-traces
+          path: test-results/
