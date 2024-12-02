@@ -39,8 +39,9 @@ def login(page):
 	yield
 
 
-def test_ship_scan_item_barcode(page):
-	page.get_by_text("Ship").click()  # this will redirect to the Ship list page
+@pytest.mark.parametrize("route", ["Receive", "Ship", "Manufacture"])
+def test_scan_item_barcode(page, route):
+	page.get_by_text(route).click()  # this will redirect to the Ship list page
 	page.locator(
 		"css=.beam_list-item"
 	).first.click()  # this will redirect to the first Purchase Order in the list

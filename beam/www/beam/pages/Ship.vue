@@ -34,6 +34,7 @@ useInfiniteScroll(
 			return
 		}
 
+		// TODO: move this to the server
 		const transformedData: ListViewItem[] = data.map(row => ({
 			count: { count: row.allocated_qty, of: row.total_required_qty },
 			label: `${row.doctype} - ${row.parent}`,

@@ -44,7 +44,7 @@ useInfiniteScroll(
 				Warehouse: ${row.warehouse}
 				Supplier: ${row.supplier}
 			`.trim(),
-			route: `#/purchase_order/${row.parent || 'new-purchase-order'}`,
+			route: `#/purchase-receipt?id=${row.parent}`,
 		}))
 
 		receive.value.push(...transformedData)
