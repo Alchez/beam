@@ -9,6 +9,10 @@ import pytest
 from playwright.sync_api import expect
 
 
+# NOTE: any navigation tests should be done using `expect(page).to_have_url` since
+# `page.expect_navigation()` since the latter won't work with Beam's hash-based routes
+
+
 @pytest.fixture(scope="session")
 def browser_context_args(browser_context_args):
 	# emulate an Android barcode scanner
@@ -31,35 +35,31 @@ def login(page):
 	# visiting the home page redirects to login page
 	page.get_by_role("textbox", name="Email").fill("Administrator")
 	page.get_by_role("textbox", name="Password").fill("qwe")
-	page.get_by_role("button", name="Login").click()
-
-	# NOTE: all navigation tests should be done using `expect(page).to_have_url` rather
-	# than `page.expect_navigation()` because the latter does not work with hash-based routes
+	page.get_by_role("button", name="Login").click()  # this will redirect to `/beam`
 	yield
 
 
-def test_ship(page):
+def test_ship_scan_item_barcode(page):
+	page.get_by_text("Ship").click()  # this will redirect to the Ship list page
+	page.locator(
+		"css=.beam_list-item"
+	).first.click()  # this will redirect to the first Purchase Order in the list
 
-	# assert redirection to beam homepage after login
-	page.expect_navigation(url=re.compile("/beam"))
+	# find the first item in the order list
+	item = page.locator("css=.box .beam_list-item").first
+	item_name, *others = item.inner_text().split("\n")
+	item_count = page.locator("css=.box .beam_item-count").first
+	expect(item_count).to_have_text(re.compile("0/"))
 
-	# navigate to ship list page
-	page.get_by_text("Ship").click()
-	expect(page).to_have_url(re.compile("/beam#/ship"))
-
-	# navigate to first purchase order in list
-	page.get_by_role("listitem").first.click()
-	expect(page).to_have_url(re.compile("/beam#/delivery-note"))
-
-	# TODO: find item via the page
+	# ensure the item has barcodes
 	barcodes = frappe.get_all(
-		"Item Barcode", filters={"parenttype": "Item", "parent": "Ambrosia Pie"}, pluck="barcode"
+		"Item Barcode", filters={"parenttype": "Item", "parent": item_name}, pluck="barcode"
 	)
 	assert len(barcodes) > 0
 
-	def scan_request(request):
-		return request.post_data_json.get("cmd") != "beam.beam.scan.scan"
-
-	# TODO: scan barcode
-	with page.expect_request(scan_request) as request_info:
+	# scan barcode
+	with page.expect_request(
+		lambda request: request.headers.get("x-frappe-cmd") == "beam.beam.scan.scan"
+	):
 		page.evaluate("barcode => scanner.simulate(window, barcode)", barcodes[0])
+		expect(item_count).to_have_text(re.compile("1/"))
