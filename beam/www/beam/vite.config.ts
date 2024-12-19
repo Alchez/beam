@@ -114,9 +114,8 @@ export default defineConfig({
 	},
 
 	build: {
-		minify: false,
 		emptyOutDir: false,
-		sourcemap: 'inline',
+		sourcemap: true,
 		outDir: './beam/www/beam/',
 		target: 'esnext',
 		lib: {
