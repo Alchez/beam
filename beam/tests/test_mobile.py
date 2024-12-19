@@ -33,8 +33,8 @@ def login(page):
 	page.goto(base_url)
 
 	# visiting the home page redirects to login page
-	page.get_by_role("textbox", name="Email").fill("Administrator")
-	page.get_by_role("textbox", name="Password").fill("qwe")
+	page.get_by_role("textbox", name="Email").fill("support@agritheory.dev")
+	page.get_by_role("textbox", name="Password").fill("admin")
 	page.get_by_role("button", name="Login").click()  # this will redirect to `/beam`
 	yield
 
