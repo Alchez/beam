@@ -29,3 +29,16 @@ def login(page):
 	page.get_by_role("textbox", name="Password").fill("admin")
 	page.get_by_role("button", name="Login").click()  # this will redirect to `/beam`
 	yield
+
+	# delete all Purchase Receipts created during the test
+	receipts = frappe.get_all(
+		"Purchase Receipt", filters={"docstatus": ["in", [1, 2]]}, fields=["name", "docstatus"]
+	)
+	for receipt in receipts:
+		receipt_doc = frappe.get_doc("Purchase Receipt", receipt.name)
+		if receipt.docstatus == 1:
+			receipt_doc.cancel()
+		# only delete if the document is in draft state, since cancelled documents are
+		# linked to SLEs, which can't be deleted
+		elif receipt.docstatus == 0:
+			receipt_doc.delete()
