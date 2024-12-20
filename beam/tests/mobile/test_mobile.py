@@ -13,32 +13,6 @@ from playwright.sync_api import expect
 # `page.expect_navigation()` since the latter won't work with Beam's hash-based routes
 
 
-@pytest.fixture(scope="session")
-def browser_context_args(browser_context_args):
-	# emulate an Android barcode scanner
-	return {
-		**browser_context_args,
-		"viewport": {
-			"width": 400,
-			"height": 900,
-		},
-	}
-
-
-@pytest.fixture(autouse=True)
-def login(page):
-	page.set_default_timeout(5000)
-
-	base_url = frappe.utils.get_url()
-	page.goto(base_url)
-
-	# visiting the home page redirects to login page
-	page.get_by_role("textbox", name="Email").fill("support@agritheory.dev")
-	page.get_by_role("textbox", name="Password").fill("admin")
-	page.get_by_role("button", name="Login").click()  # this will redirect to `/beam`
-	yield
-
-
 @pytest.mark.parametrize("route", ["Receive", "Ship", "Manufacture"])
 def test_scan_item_barcode(page, route):
 	# navigate in the following order: Home -> List -> Form
