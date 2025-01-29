@@ -123,7 +123,7 @@ doc_events = {
 			"beam.beam.overrides.inventory_dimension.reset_receiving_map",
 		],
 	},
-	("Item", "Warehouse"): {
+	("Item", "Warehouse", "User"): {
 		"validate": ["beam.beam.barcodes.create_beam_barcode"],
 	},
 	# (
