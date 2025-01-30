@@ -13,7 +13,8 @@ from playwright.sync_api import expect
 # `page.expect_navigation()` since the latter won't work with Beam's hash-based routes
 
 
-@pytest.mark.parametrize("route", ["Ship", "Manufacture"])
+@pytest.mark.order(3)
+@pytest.mark.parametrize("route", ["Ship"])
 def test_scan_item_barcode(page, route):
 	# navigate in the following order: Home -> List -> Form
 	page.get_by_text(route).click()

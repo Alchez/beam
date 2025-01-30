@@ -14,7 +14,7 @@ from playwright.sync_api import expect
 # `page.expect_navigation()` won't work with Beam's hash-based routes
 
 
-@pytest.mark.order(1)
+@pytest.mark.order(2)
 def test_complete_partial_receipt(page):
 	# navigate in the following order: Home -> Receive -> Purchase Order
 	page.get_by_text("Receive").click()

@@ -18,7 +18,10 @@ def browser_context_args(browser_context_args):
 
 
 @pytest.fixture(autouse=True)
-def login(page):
+def setup(page):
+	# delete all existing draft Purchase Receipts
+	delete_draft_records(["Purchase Receipt", "Stock Entry"])
+
 	page.set_default_timeout(5000)
 
 	base_url = frappe.utils.get_url()
@@ -42,3 +45,10 @@ def login(page):
 		# linked to SLEs, which can't be deleted
 		elif receipt.docstatus == 0:
 			receipt_doc.delete()
+
+
+def delete_draft_records(doctypes: list[str]):
+	for doctype in doctypes:
+		records = frappe.get_all(doctype, filters={"docstatus": 0}, pluck="name")
+		for record in records:
+			frappe.delete_doc(doctype, record, force=True)
