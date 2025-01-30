@@ -1,7 +1,7 @@
 <template>
 	<Navbar>
 		<template #title>
-			<h1 class="nav-title">Move</h1>
+			<h1>Move</h1>
 		</template>
 		<template #navbaraction>
 			<RouterLink :to="{ name: 'home' }">Home</RouterLink>
@@ -32,7 +32,6 @@ import type { ListViewItem } from '@stonecrop/beam'
 import { ref, onMounted, computed } from 'vue'
 
 import ControlButtons from '@/components/ControlButtons.vue'
-// import ADropdown from '@/components/ADropdown.vue'
 import { useBeamStore } from '@/stores/beam'
 import type { ControlButton, DocActionResponse, StockEntry } from '@/types'
 import { watch } from 'vue'

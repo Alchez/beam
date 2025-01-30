@@ -20,8 +20,10 @@ class BEAMSettings(Document):
 		company: DF.Link
 		enable_demand: DF.Check
 		enable_handling_units: DF.Check
+		enable_scan_to_login: DF.Check
 		ignore_drop_shipped_items: DF.Check
 		receiving_workstation: DF.Link | None
+		restrict_ip: DF.SmallText | None
 		routes: DF.Table[BEAMMobileRoute]
 		shipping_workstation: DF.Link | None
 		warehouse_types: DF.TableMultiSelect[WarehouseTypes]

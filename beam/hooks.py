@@ -123,7 +123,7 @@ doc_events = {
 			"beam.beam.overrides.inventory_dimension.reset_receiving_map",
 		],
 	},
-	("Item", "Warehouse"): {
+	("Item", "Warehouse", "User"): {
 		"validate": ["beam.beam.barcodes.create_beam_barcode"],
 	},
 	# (
@@ -546,6 +546,7 @@ beam_mobile = {
 		"Ship": "./beam/beam/www/beam/pages/Ship.vue",
 		"WorkOrder": "./beam/beam/www/beam/pages/WorkOrder.vue",
 		"Workstation": "./beam/beam/www/beam/pages/Workstation.vue",
+		"404": "./beam/beam/www/beam/pages/404.vue",
 	},
 	"routes": [
 		{
@@ -625,6 +626,11 @@ beam_mobile = {
 			"name": "repack",
 			"component": "Repack",
 			"meta": {"requiresAuth": True, "doctype": "Stock Entry", "view": "list"},
+		},
+		{
+			"path": "/:catchAll(.*)*",
+			"name": "404",
+			"component": "404",
 		},
 	],
 }
