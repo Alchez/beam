@@ -14,12 +14,13 @@
 			:title="'Status'"
 			:choices="[
 				{ label: 'All', value: 'all' },
-				{ label: 'Complete', value: 'complete' },
-				{ label: 'Incomplete', value: 'incomplete' },
+				{ label: 'Not Started', value: 'not_started' },
+				{ label: 'In Process', value: 'in_process' },
+				{ label: 'Completed', value: 'completed' },
 			]"
 			@select="filterByStatus" />
 		<BeamFilterOption
-			:title="'Delivery Start Date'"
+			:title="'Start Date'"
 			:choices="[
 				{ label: 'All', value: 'all' },
 				{ label: 'Past', value: 'past' },
@@ -81,32 +82,40 @@ const setItems = (orders: WorkOrder[]) => {
 }
 
 const filterByStatus = (choice: BeamFilterChoice) => {
-	if (choice.value === 'all') {
-		setItems(orders.value)
-	} else if (choice.value === 'complete') {
-		const completedOrders = orders.value.filter(order => order.status === 'Completed')
-		setItems(completedOrders)
-	} else if (choice.value === 'incomplete') {
-		const incompleteOrders = orders.value.filter(order => order.status !== 'Completed')
-		setItems(incompleteOrders)
+	let filteredOrders = orders.value
+
+	switch (choice.value) {
+		case 'not_started':
+			filteredOrders = orders.value.filter(order => order.status === 'Not Started')
+			break
+		case 'in_process':
+			filteredOrders = orders.value.filter(order => order.status === 'In Process')
+			break
+		case 'completed':
+			filteredOrders = orders.value.filter(order => order.status === 'Completed')
+			break
 	}
+
+	setItems(filteredOrders)
 }
 
 const filterByDate = (choice: BeamFilterChoice) => {
 	const today = new Date()
 	const todayString = today.toISOString().split('T')[0]
+	let filteredOrders = orders.value
 
-	if (choice.value === 'all') {
-		setItems(orders.value)
-	} else if (choice.value === 'past') {
-		const pastOrders = orders.value.filter(order => order.planned_start_date < todayString)
-		setItems(pastOrders)
-	} else if (choice.value === 'today') {
-		const todayOrders = orders.value.filter(order => order.planned_start_date === todayString)
-		setItems(todayOrders)
-	} else if (choice.value === 'future') {
-		const futureOrders = orders.value.filter(order => order.planned_start_date > todayString)
-		setItems(futureOrders)
+	switch (choice.value) {
+		case 'past':
+			filteredOrders = orders.value.filter(order => order.planned_start_date < todayString)
+			break
+		case 'today':
+			filteredOrders = orders.value.filter(order => order.planned_start_date === todayString)
+			break
+		case 'future':
+			filteredOrders = orders.value.filter(order => order.planned_start_date > todayString)
+			break
 	}
+
+	setItems(filteredOrders)
 }
 </script>

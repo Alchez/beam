@@ -33,33 +33,33 @@ export type ControlButton = {
 }
 
 export type Demand = {
-	allocated_date: null
+	allocated_date: string
 	allocated_qty: number
 	assigned: string
 	bom_no: string
 	company: string
 	creation: string
 	customer: string
-	delivery_date: null
+	delivery_date: string
 	demand: string
 	doctype: string
 	idx: number
 	item_code: string
 	item_warehouse: string
 	key: string
-	modified: null
+	modified: string
 	name: string
 	net_required_qty: number
 	parent: string
 	production_item: string
-	status: string
+	status: '' | 'Unallocated' | 'Partially Allocated' | 'Soft Allocated'
 	stock_uom: string
 	total_required_qty: number
 	warehouse: string
 }
 
 export type Receive = {
-	assigned: null
+	assigned: string
 	company: string
 	creation: string
 	doctype: string

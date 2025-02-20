@@ -8,23 +8,47 @@
 		</template>
 	</Navbar>
 
-	<ListView :items="transfer" />
+	<!-- setup filters -->
+	<BeamFilter>
+		<BeamFilterOption
+			:title="'Status'"
+			:choices="[
+				{ label: 'All', value: 'all' },
+				{ label: 'Unallocated', value: 'unallocated' },
+				{ label: 'Partially Allocated', value: 'partially_allocated' },
+				{ label: 'Soft Allocated', value: 'soft_allocated' },
+			]"
+			@select="filterByStatus" />
+		<BeamFilterOption
+			:title="'Delivery Date'"
+			:choices="[
+				{ label: 'All', value: 'all' },
+				{ label: 'Past', value: 'past' },
+				{ label: 'Today', value: 'today' },
+				{ label: 'Future', value: 'future' },
+			]"
+			@select="filterByDate" />
+	</BeamFilter>
+
+	<!-- setup list view -->
+	<ListView :items="demandList" />
 </template>
 
 <script setup lang="ts">
-import type { ListViewItem } from '@stonecrop/beam'
+import type { BeamFilterChoice, ListViewItem } from '@stonecrop/beam'
 import { useInfiniteScroll } from '@vueuse/core'
 import { ref } from 'vue'
 
 import { useBeamStore } from '@/stores/beam'
+import type { Demand } from '@/types'
 
 declare const frappe: any
 
 const store = useBeamStore()
-const transfer = ref<ListViewItem[]>([])
+const demand = ref<Demand[]>([])
+const demandList = ref<ListViewItem[]>([])
 const canLoadMore = ref(true)
 const page = ref(1)
-const dates = ref<string[]>([])
 
 useInfiniteScroll(
 	window,
@@ -35,37 +59,81 @@ useInfiniteScroll(
 			return
 		}
 
-		// TODO: move this to the server
-		for (const row of data) {
-			const scheduledDate = new Date(row.allocated_date)
-
-			// add day-divider config when date changes
-			if (!dates.value.includes(scheduledDate.toDateString())) {
-				dates.value.push(scheduledDate.toDateString())
-				transfer.value.push({
-					date: scheduledDate.toISOString(),
-					linkComponent: 'BeamDayDivider',
-				})
-			}
-
-			transfer.value.push({
-				label: `${row.item_code} from ${row.item_warehouse}`,
-				linkComponent: 'ListAnchor',
-				route: `#/${frappe.scrub(row.doctype)}/${row.parent}`,
-				description: `
-					[${row.parent}]
-					Production Item: ${row.production_item}
-					BOM No: ${row.bom_no}
-				`.trim(),
-				count: {
-					count: +row.allocated_qty.toFixed(2),
-					of: +row.total_required_qty.toFixed(2),
-				},
-			})
-		}
-
+		demand.value = [...demand.value, ...data]
+		setDemand(demand.value)
 		page.value++
 	},
 	{ canLoadMore: () => canLoadMore.value }
 )
+
+const setDemand = (data: Demand[]) => {
+	const dates: string[] = []
+	demandList.value = []
+	// TODO: move this to the server
+	for (const row of data) {
+		const scheduledDate = new Date(row.allocated_date)
+
+		// add day-divider config when date changes
+		if (!dates.includes(scheduledDate.toDateString())) {
+			dates.push(scheduledDate.toDateString())
+			demandList.value.push({
+				date: scheduledDate.toISOString(),
+				linkComponent: 'BeamDayDivider',
+			})
+		}
+
+		demandList.value.push({
+			label: `${row.item_code} from ${row.item_warehouse}`,
+			linkComponent: 'ListAnchor',
+			route: `#/${frappe.scrub(row.doctype)}/${row.parent}`,
+			description: `
+					[${row.parent}]
+					Production Item: ${row.production_item}
+					BOM No: ${row.bom_no}
+				`.trim(),
+			count: {
+				count: +row.allocated_qty.toFixed(2),
+				of: +row.total_required_qty.toFixed(2),
+			},
+		})
+	}
+}
+
+const filterByStatus = (choice: BeamFilterChoice) => {
+	let filteredDemand = demand.value
+
+	switch (choice.value) {
+		case 'unallocated':
+			filteredDemand = demand.value.filter(order => order.status === 'Unallocated' || order.status === '')
+			break
+		case 'partially_allocated':
+			filteredDemand = demand.value.filter(order => order.status === 'Partially Allocated')
+			break
+		case 'soft_allocated':
+			filteredDemand = demand.value.filter(order => order.status === 'Soft Allocated')
+			break
+	}
+
+	setDemand(filteredDemand)
+}
+
+const filterByDate = (choice: BeamFilterChoice) => {
+	const today = new Date()
+	const todayString = today.toISOString().split('T')[0]
+	let filteredDemand = demand.value
+
+	switch (choice.value) {
+		case 'past':
+			filteredDemand = demand.value.filter(order => order.delivery_date < todayString)
+			break
+		case 'today':
+			filteredDemand = demand.value.filter(order => order.delivery_date === todayString)
+			break
+		case 'future':
+			filteredDemand = demand.value.filter(order => order.delivery_date > todayString)
+			break
+	}
+
+	setDemand(filteredDemand)
+}
 </script>
