@@ -80,6 +80,7 @@ export type StockEntryItem = ChildDoctype & {
 export type WorkOrder = ParentDoctype & {
 	planned_start_date: string
 	production_item: string
+	status: 'Draft' | 'Submitted' | 'Not Started' | 'In Process' | 'Completed' | 'Stopped' | 'Closed' | 'Cancelled'
 	qty: number
 
 	item_name?: string
