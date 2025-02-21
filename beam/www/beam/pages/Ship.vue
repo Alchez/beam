@@ -10,59 +10,55 @@
 	</Navbar>
 
 	<!-- filters section -->
-	<DemandFilters :filterByStatus="filterByStatus" :filterByDate="filterByDate" />
+	<DemandFilters @filter="filterShipments" />
 
 	<!-- body section -->
-	<ListView :items="shipList" />
+	<ListView :items="shipList" :key="listKey" />
 </template>
 
 <script setup lang="ts">
-import type { BeamFilterChoice, ListViewItem } from '@stonecrop/beam'
+import type { ListViewItem } from '@stonecrop/beam'
 import { useInfiniteScroll } from '@vueuse/core'
 import { ref } from 'vue'
 
 import DemandFilters from '@/components/DemandFilters.vue'
 import { useBeamStore } from '@/stores/beam'
-import type { Demand } from '@/types'
+import type { Demand, DemandFilter } from '@/types'
 
 const store = useBeamStore()
+const dates = ref<(string | null)[]>([])
 const ship = ref<Demand[]>([])
 const shipList = ref<ListViewItem[]>([])
+const filters = ref<Record<string, any>>({ doctype: 'Sales Order' })
 const canLoadMore = ref(true)
 const page = ref(1)
+const listKey = ref(0)
 
-useInfiniteScroll(
-	window,
-	async () => {
-		const { data } = await store.getDemand({ filters: JSON.stringify({ doctype: 'Sales Order' }), page: page.value })
-		if (data.length === 0) {
-			canLoadMore.value = false
-			return
-		}
+const getShipments = async () => {
+	const { data } = await store.getDemand({
+		...(Object.keys(filters.value).length && { filters: JSON.stringify(filters.value) }),
+		page: page.value,
+	})
 
+	if (!data || data.length === 0) {
+		canLoadMore.value = false
+	} else {
 		ship.value = [...ship.value, ...data]
-		setShipments(ship.value)
 		page.value++
-	},
-	{ canLoadMore: () => canLoadMore.value }
-)
+	}
 
-const setShipments = (data: Demand[]) => {
-	const dates: string[] = []
+	setShipments()
+	listKey.value++
+}
+
+const setShipments = () => {
+	dates.value = []
 	shipList.value = []
 
 	// TODO: move this to the server
-	for (const row of data) {
-		const scheduledDate = new Date(row.delivery_date)
-
+	for (const row of ship.value) {
 		// add day-divider config when date changes
-		if (!dates.includes(scheduledDate.toDateString())) {
-			dates.push(scheduledDate.toDateString())
-			shipList.value.push({
-				date: scheduledDate.toISOString(),
-				linkComponent: 'BeamDayDivider',
-			})
-		}
+		addDivider(row.delivery_date)
 
 		shipList.value.push({
 			count: { count: row.allocated_qty, of: row.total_required_qty },
@@ -78,41 +74,49 @@ const setShipments = (data: Demand[]) => {
 	}
 }
 
-const filterByStatus = (choice: BeamFilterChoice) => {
-	let filteredShipments = ship.value
-
-	switch (choice.value) {
-		case 'unallocated':
-			filteredShipments = ship.value.filter(order => order.status === 'Unallocated' || order.status === '')
-			break
-		case 'partially_allocated':
-			filteredShipments = ship.value.filter(order => order.status === 'Partially Allocated')
-			break
-		case 'soft_allocated':
-			filteredShipments = ship.value.filter(order => order.status === 'Soft Allocated')
-			break
+const addDivider = (date: string | null) => {
+	if (date) {
+		const scheduledDate = new Date(date)
+		if (!dates.value.includes(scheduledDate.toDateString())) {
+			dates.value.push(scheduledDate.toDateString())
+			shipList.value.push({
+				date: scheduledDate.toISOString(),
+				linkComponent: 'BeamDayDivider',
+			})
+		}
+	} else {
+		if (!dates.value.includes(null)) {
+			dates.value.push(null)
+			shipList.value.push({
+				date: 'No Date Set',
+				linkComponent: 'BeamDayDivider',
+			})
+		}
 	}
-
-	setShipments(filteredShipments)
 }
 
-const filterByDate = (choice: BeamFilterChoice) => {
-	const today = new Date()
-	const todayString = today.toISOString().split('T')[0]
-	let filteredShipments = ship.value
+const resetShipments = () => {
+	page.value = 1
+	ship.value = []
+	canLoadMore.value = true
+}
 
-	switch (choice.value) {
-		case 'past':
-			filteredShipments = ship.value.filter(order => order.delivery_date < todayString)
-			break
-		case 'today':
-			filteredShipments = ship.value.filter(order => order.delivery_date === todayString)
-			break
-		case 'future':
-			filteredShipments = ship.value.filter(order => order.delivery_date > todayString)
-			break
+const filterShipments = (demandFilters: DemandFilter) => {
+	resetShipments()
+
+	if (demandFilters.status) {
+		filters.value.status = demandFilters.status
+	} else {
+		delete filters.value.status
+	}
+	if (demandFilters.date) {
+		filters.value.delivery_date = demandFilters.date
+	} else {
+		delete filters.value.delivery_date
 	}
 
-	setShipments(filteredShipments)
+	getShipments()
 }
+
+useInfiniteScroll(window, getShipments, { canLoadMore: () => canLoadMore.value })
 </script>

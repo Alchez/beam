@@ -28,7 +28,8 @@
 				{ label: 'Today', value: 'today' },
 				{ label: 'Future', value: 'future' },
 			]"
-			@select="filterByDate" />
+			@select="filterByDate"
+			:key="listKey" />
 	</BeamFilter>
 
 	<!-- body section -->
@@ -42,35 +43,43 @@ import { onMounted, ref } from 'vue'
 import { useBeamStore } from '@/stores/beam'
 import type { WorkOrder } from '@/types'
 
-const orders = ref<WorkOrder[]>([])
+const dates = ref<(string | null)[]>([])
+const filters = ref<Record<string, any>>({})
 const items = ref<ListViewItem[]>([])
+const orders = ref<WorkOrder[]>([])
 const store = useBeamStore()
+const listKey = ref(0)
 
 onMounted(async () => {
+	await getItems()
+})
+
+const getItems = async () => {
 	orders.value = await store.getAll<WorkOrder[]>('Work Order', {
+		...(Object.keys(filters.value).length && { filters: JSON.stringify(filters.value) }),
 		fields: JSON.stringify(['name', 'item_name', 'qty', 'produced_qty', 'planned_start_date', 'status']),
 		order_by: 'creation asc',
 	})
 
 	setItems(orders.value)
-})
+}
 
 const setItems = (orders: WorkOrder[]) => {
 	items.value = []
-	const dates: string[] = []
-	orders.forEach(row => {
-		const plannedDate = new Date(row.planned_start_date)
-		const formattedDate = store.formatDate(plannedDate)
+	dates.value = []
 
+	orders.forEach(row => {
 		// add day-divider config when date changes
-		if (!dates.includes(plannedDate.toDateString())) {
-			dates.push(plannedDate.toDateString())
+		const plannedDate = new Date(row.planned_start_date)
+		if (!dates.value.includes(plannedDate.toDateString())) {
+			dates.value.push(plannedDate.toDateString())
 			items.value.push({
 				date: plannedDate.toISOString(),
 				linkComponent: 'BeamDayDivider',
 			})
 		}
 
+		const formattedDate = store.formatDate(plannedDate)
 		items.value.push({
 			...row,
 			label: `${row.name} - ${row.item_name}`,
@@ -83,40 +92,43 @@ const setItems = (orders: WorkOrder[]) => {
 }
 
 const filterByStatus = (choice: BeamFilterChoice) => {
-	let filteredOrders = orders.value
-
 	switch (choice.value) {
+		case 'all':
+			delete filters.value.status
+			break
 		case 'not_started':
-			filteredOrders = orders.value.filter(order => order.status === 'Not Started')
+			filters.value.status = 'Not Started'
 			break
 		case 'in_process':
-			filteredOrders = orders.value.filter(order => order.status === 'In Process')
+			filters.value.status = 'In Process'
 			break
 		case 'completed':
-			filteredOrders = orders.value.filter(order => order.status === 'Completed')
+			filters.value.status = 'Completed'
 			break
 	}
 
-	setItems(filteredOrders)
+	getItems()
 }
 
 const filterByDate = (choice: BeamFilterChoice) => {
 	const today = new Date()
 	const todayString = today.toISOString().split('T')[0]
-	let filteredOrders = orders.value
 
 	switch (choice.value) {
+		case 'all':
+			delete filters.value.planned_start_date
+			break
 		case 'past':
-			filteredOrders = orders.value.filter(order => order.planned_start_date < todayString)
+			filters.value.planned_start_date = ['<', todayString]
 			break
 		case 'today':
-			filteredOrders = orders.value.filter(order => order.planned_start_date === todayString)
+			filters.value.planned_start_date = todayString
 			break
 		case 'future':
-			filteredOrders = orders.value.filter(order => order.planned_start_date > todayString)
+			filters.value.planned_start_date = ['>', todayString]
 			break
 	}
 
-	setItems(filteredOrders)
+	getItems()
 }
 </script>

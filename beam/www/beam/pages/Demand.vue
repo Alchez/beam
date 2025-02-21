@@ -10,61 +10,57 @@
 	</Navbar>
 
 	<!-- filters section -->
-	<DemandFilters :filterByStatus="filterByStatus" :filterByDate="filterByDate" />
+	<DemandFilters @filter="filterDemand" />
 
 	<!-- body section -->
-	<ListView :items="demandList" />
+	<ListView :items="demandList" :key="listKey" />
 </template>
 
 <script setup lang="ts">
-import type { BeamFilterChoice, ListViewItem } from '@stonecrop/beam'
+import type { ListViewItem } from '@stonecrop/beam'
 import { useInfiniteScroll } from '@vueuse/core'
 import { ref } from 'vue'
 
 import DemandFilters from '@/components/DemandFilters.vue'
 import { useBeamStore } from '@/stores/beam'
-import type { Demand } from '@/types'
+import type { Demand, DemandFilter } from '@/types'
 
 declare const frappe: any
 
 const store = useBeamStore()
+const dates = ref<(string | null)[]>([])
 const demand = ref<Demand[]>([])
 const demandList = ref<ListViewItem[]>([])
+const filters = ref<Record<string, any>>({})
 const canLoadMore = ref(true)
 const page = ref(1)
+const listKey = ref(0)
 
-useInfiniteScroll(
-	window,
-	async () => {
-		const { data } = await store.getDemand({ order_by: 'creation asc', page: page.value })
-		if (!data || data.length === 0) {
-			canLoadMore.value = false
-			return
-		}
+const getDemand = async () => {
+	const { data } = await store.getDemand({
+		...(Object.keys(filters.value).length && { filters: JSON.stringify(filters.value) }),
+		page: page.value,
+	})
 
+	if (!data || data.length === 0) {
+		canLoadMore.value = false
+	} else {
 		demand.value = [...demand.value, ...data]
-		setDemand(demand.value)
 		page.value++
-	},
-	{ canLoadMore: () => canLoadMore.value }
-)
+	}
 
-const setDemand = (data: Demand[]) => {
-	const dates: string[] = []
+	setDemand()
+	listKey.value++
+}
+
+const setDemand = () => {
+	dates.value = []
 	demandList.value = []
 
 	// TODO: move this to the server
-	for (const row of data) {
-		const scheduledDate = new Date(row.allocated_date)
-
+	for (const row of demand.value) {
 		// add day-divider config when date changes
-		if (!dates.includes(scheduledDate.toDateString())) {
-			dates.push(scheduledDate.toDateString())
-			demandList.value.push({
-				date: scheduledDate.toISOString(),
-				linkComponent: 'BeamDayDivider',
-			})
-		}
+		addDivider(row.allocated_date)
 
 		demandList.value.push({
 			label: `${row.item_code} from ${row.item_warehouse}`,
@@ -83,41 +79,50 @@ const setDemand = (data: Demand[]) => {
 	}
 }
 
-const filterByStatus = (choice: BeamFilterChoice) => {
-	let filteredDemand = demand.value
-
-	switch (choice.value) {
-		case 'unallocated':
-			filteredDemand = demand.value.filter(order => order.status === 'Unallocated' || order.status === '')
-			break
-		case 'partially_allocated':
-			filteredDemand = demand.value.filter(order => order.status === 'Partially Allocated')
-			break
-		case 'soft_allocated':
-			filteredDemand = demand.value.filter(order => order.status === 'Soft Allocated')
-			break
+const addDivider = (date: string | null) => {
+	if (date) {
+		const scheduledDate = new Date(date)
+		if (!dates.value.includes(scheduledDate.toDateString())) {
+			dates.value.push(scheduledDate.toDateString())
+			demandList.value.push({
+				date: scheduledDate.toISOString(),
+				linkComponent: 'BeamDayDivider',
+			})
+		}
+	} else {
+		if (!dates.value.includes(null)) {
+			dates.value.push(null)
+			demandList.value.push({
+				date: 'No Date Set',
+				linkComponent: 'BeamDayDivider',
+			})
+		}
 	}
-
-	setDemand(filteredDemand)
 }
 
-const filterByDate = (choice: BeamFilterChoice) => {
-	const today = new Date()
-	const todayString = today.toISOString().split('T')[0]
-	let filteredDemand = demand.value
+const resetDemand = () => {
+	page.value = 1
+	dates.value = []
+	demand.value = []
+	canLoadMore.value = true
+}
 
-	switch (choice.value) {
-		case 'past':
-			filteredDemand = demand.value.filter(order => order.delivery_date < todayString)
-			break
-		case 'today':
-			filteredDemand = demand.value.filter(order => order.delivery_date === todayString)
-			break
-		case 'future':
-			filteredDemand = demand.value.filter(order => order.delivery_date > todayString)
-			break
+const filterDemand = (demandFilters: DemandFilter) => {
+	resetDemand()
+
+	if (demandFilters.status) {
+		filters.value.status = demandFilters.status
+	} else {
+		delete filters.value.status
+	}
+	if (demandFilters.date) {
+		filters.value.delivery_date = demandFilters.date
+	} else {
+		delete filters.value.delivery_date
 	}
 
-	setDemand(filteredDemand)
+	getDemand()
 }
+
+useInfiniteScroll(window, getDemand, { canLoadMore: () => canLoadMore.value })
 </script>

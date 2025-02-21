@@ -32,8 +32,13 @@ export type ControlButton = {
 	hidden?: boolean
 }
 
+export type DemandFilter = {
+	status?: Demand['status'] | Receive['status'] | ['in', (Demand['status'] | Receive['status'])[]]
+	date?: string | ['<' | '>' | '>=' | '<=', string]
+}
+
 export type Demand = {
-	allocated_date: string
+	allocated_date: string | null
 	allocated_qty: number
 	assigned: string
 	bom_no: string
