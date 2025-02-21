@@ -10,26 +10,7 @@
 	</Navbar>
 
 	<!-- filters section -->
-	<BeamFilter>
-		<BeamFilterOption
-			:title="'Status'"
-			:choices="[
-				{ label: 'All', value: 'all' },
-				{ label: 'Unallocated', value: 'unallocated' },
-				{ label: 'Partially Allocated', value: 'partially_allocated' },
-				{ label: 'Soft Allocated', value: 'soft_allocated' },
-			]"
-			@select="filterByStatus" />
-		<BeamFilterOption
-			:title="'Delivery Date'"
-			:choices="[
-				{ label: 'All', value: 'all' },
-				{ label: 'Past', value: 'past' },
-				{ label: 'Today', value: 'today' },
-				{ label: 'Future', value: 'future' },
-			]"
-			@select="filterByDate" />
-	</BeamFilter>
+	<DemandFilters :filterByStatus="filterByStatus" :filterByDate="filterByDate" />
 
 	<!-- body section -->
 	<ListView :items="demandList" />
@@ -40,6 +21,7 @@ import type { BeamFilterChoice, ListViewItem } from '@stonecrop/beam'
 import { useInfiniteScroll } from '@vueuse/core'
 import { ref } from 'vue'
 
+import DemandFilters from '@/components/DemandFilters.vue'
 import { useBeamStore } from '@/stores/beam'
 import type { Demand } from '@/types'
 
