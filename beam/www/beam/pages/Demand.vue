@@ -1,4 +1,5 @@
 <template>
+	<!-- navigation section -->
 	<Navbar>
 		<template #title>
 			<h1>Demand</h1>
@@ -8,7 +9,7 @@
 		</template>
 	</Navbar>
 
-	<!-- setup filters -->
+	<!-- filters section -->
 	<BeamFilter>
 		<BeamFilterOption
 			:title="'Status'"
@@ -30,7 +31,7 @@
 			@select="filterByDate" />
 	</BeamFilter>
 
-	<!-- setup list view -->
+	<!-- body section -->
 	<ListView :items="demandList" />
 </template>
 
@@ -69,6 +70,7 @@ useInfiniteScroll(
 const setDemand = (data: Demand[]) => {
 	const dates: string[] = []
 	demandList.value = []
+
 	// TODO: move this to the server
 	for (const row of data) {
 		const scheduledDate = new Date(row.allocated_date)

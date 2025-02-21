@@ -72,7 +72,7 @@ export type Receive = {
 	received_qty: number
 	rejected_qty: number
 	schedule_date: string
-	status: string
+	status: '' | 'Unallocated' | 'Partially Allocated' | 'Soft Allocated'
 	stock_qty: number
 	stock_uom: string
 	supplier: string

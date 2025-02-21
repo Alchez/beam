@@ -1,4 +1,5 @@
 <template>
+	<!-- navigation section -->
 	<Navbar>
 		<template #title>
 			<h1>Manufacture</h1>
@@ -8,7 +9,7 @@
 		</template>
 	</Navbar>
 
-	<!-- setup filters -->
+	<!-- filters section -->
 	<BeamFilter>
 		<BeamFilterOption
 			:title="'Status'"
@@ -30,7 +31,7 @@
 			@select="filterByDate" />
 	</BeamFilter>
 
-	<!-- setup list view -->
+	<!-- body section -->
 	<ListView :items="items" />
 </template>
 

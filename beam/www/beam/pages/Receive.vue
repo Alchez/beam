@@ -9,22 +9,45 @@
 		</template>
 	</Navbar>
 
+	<!-- filters section -->
+	<BeamFilter>
+		<BeamFilterOption
+			:title="'Status'"
+			:choices="[
+				{ label: 'All', value: 'all' },
+				{ label: 'Unallocated', value: 'unallocated' },
+				{ label: 'Partially Allocated', value: 'partially_allocated' },
+				{ label: 'Soft Allocated', value: 'soft_allocated' },
+			]"
+			@select="filterByStatus" />
+		<BeamFilterOption
+			:title="'Delivery Date'"
+			:choices="[
+				{ label: 'All', value: 'all' },
+				{ label: 'Past', value: 'past' },
+				{ label: 'Today', value: 'today' },
+				{ label: 'Future', value: 'future' },
+			]"
+			@select="filterByDate" />
+	</BeamFilter>
+
 	<!-- body section -->
-	<ListView :items="receive" />
+	<ListView :items="receiveList" />
 </template>
 
 <script setup lang="ts">
-import type { ListViewItem } from '@stonecrop/beam'
+import type { BeamFilterChoice, ListViewItem } from '@stonecrop/beam'
 import { useInfiniteScroll } from '@vueuse/core'
 import { ref } from 'vue'
 
 import { useBeamStore } from '@/stores/beam'
+import { Receive } from '@/types'
 
 const store = useBeamStore()
-const receive = ref<ListViewItem[]>([])
+const receive = ref<Receive[]>([])
+const receiveList = ref<ListViewItem[]>([])
 const canLoadMore = ref(true)
 const page = ref(1)
-const dates = ref<string[]>([])
 
 useInfiniteScroll(
 	window,
@@ -35,36 +58,81 @@ useInfiniteScroll(
 			return
 		}
 
-		// TODO: move this to the server
-		for (const row of data) {
-			const scheduledDate = new Date(row.schedule_date)
-
-			// add day-divider config when date changes
-			if (!dates.value.includes(scheduledDate.toDateString())) {
-				dates.value.push(scheduledDate.toDateString())
-				receive.value.push({
-					date: scheduledDate.toISOString(),
-					linkComponent: 'BeamDayDivider',
-				})
-			}
-
-			receive.value.push({
-				count: { count: row.received_qty, of: row.stock_qty },
-				label: `${row.item_code} from ${row.warehouse}`,
-				linkComponent: 'ListAnchor',
-				description: `
-					[${row.parent}]
-					Warehouse: ${row.warehouse}
-					Supplier: ${row.supplier}
-				`.trim(),
-				route: `#/purchase_order/${row.parent || 'new-purchase-order'}`,
-			})
-		}
-
+		receive.value = [...receive.value, ...data]
+		setReceive(receive.value)
 		page.value++
 	},
 	{ canLoadMore: () => canLoadMore.value }
 )
+
+const setReceive = (data: Receive[]) => {
+	const dates: string[] = []
+	receiveList.value = []
+
+	// TODO: move this to the server
+	for (const row of data) {
+		const scheduledDate = new Date(row.schedule_date)
+
+		// add day-divider config when date changes
+		if (!dates.includes(scheduledDate.toDateString())) {
+			dates.push(scheduledDate.toDateString())
+			receiveList.value.push({
+				date: scheduledDate.toISOString(),
+				linkComponent: 'BeamDayDivider',
+			})
+		}
+
+		receiveList.value.push({
+			count: { count: row.received_qty, of: row.stock_qty },
+			label: `${row.item_code} from ${row.warehouse}`,
+			linkComponent: 'ListAnchor',
+			description: `
+					[${row.parent}]
+					Warehouse: ${row.warehouse}
+					Supplier: ${row.supplier}
+				`.trim(),
+			route: `#/purchase_order/${row.parent || 'new-purchase-order'}`,
+		})
+	}
+}
+
+const filterByStatus = (choice: BeamFilterChoice) => {
+	let filteredReceive = receive.value
+
+	switch (choice.value) {
+		case 'unallocated':
+			filteredReceive = receive.value.filter(order => order.status === 'Unallocated' || order.status === '')
+			break
+		case 'partially_allocated':
+			filteredReceive = receive.value.filter(order => order.status === 'Partially Allocated')
+			break
+		case 'soft_allocated':
+			filteredReceive = receive.value.filter(order => order.status === 'Soft Allocated')
+			break
+	}
+
+	setReceive(filteredReceive)
+}
+
+const filterByDate = (choice: BeamFilterChoice) => {
+	const today = new Date()
+	const todayString = today.toISOString().split('T')[0]
+	let filteredReceive = receive.value
+
+	switch (choice.value) {
+		case 'past':
+			filteredReceive = receive.value.filter(order => order.schedule_date < todayString)
+			break
+		case 'today':
+			filteredReceive = receive.value.filter(order => order.schedule_date === todayString)
+			break
+		case 'future':
+			filteredReceive = receive.value.filter(order => order.schedule_date > todayString)
+			break
+	}
+
+	setReceive(filteredReceive)
+}
 </script>
 
 <style>
