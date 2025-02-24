@@ -107,9 +107,7 @@ const resetDemand = () => {
 	canLoadMore.value = true
 }
 
-const filterDemand = (demandFilters: DemandFilter) => {
-	resetDemand()
-
+const setFilters = (demandFilters: DemandFilter) => {
 	if (demandFilters.status) {
 		filters.value.status = demandFilters.status
 	} else {
@@ -120,8 +118,17 @@ const filterDemand = (demandFilters: DemandFilter) => {
 	} else {
 		delete filters.value.delivery_date
 	}
+	if (demandFilters.user) {
+		filters.value.assigned = demandFilters.user
+	} else {
+		delete filters.value.assigned
+	}
+}
 
-	getDemand()
+const filterDemand = async (demandFilters: DemandFilter) => {
+	resetDemand()
+	setFilters(demandFilters)
+	await getDemand()
 }
 
 useInfiniteScroll(window, getDemand, { canLoadMore: () => canLoadMore.value })

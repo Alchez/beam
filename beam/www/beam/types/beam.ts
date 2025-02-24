@@ -35,6 +35,7 @@ export type ControlButton = {
 export type DemandFilter = {
 	status?: Demand['status'] | Receive['status'] | ['in', (Demand['status'] | Receive['status'])[]]
 	date?: string | ['<' | '>' | '>=' | '<=', string]
+	user?: string
 }
 
 export type Demand = {

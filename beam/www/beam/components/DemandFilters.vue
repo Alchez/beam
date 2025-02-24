@@ -2,7 +2,7 @@
 	<!-- filters section -->
 	<BeamFilter>
 		<BeamFilterOption
-			:title="'Status'"
+			title="Status"
 			:choices="[
 				{ label: 'All', value: 'all' },
 				{ label: 'Unallocated', value: 'unallocated' },
@@ -11,7 +11,7 @@
 			]"
 			@select="setStatusFilter" />
 		<BeamFilterOption
-			:title="'Delivery Date'"
+			title="Delivery Date"
 			:choices="[
 				{ label: 'All', value: 'all' },
 				{ label: 'Past', value: 'past' },
@@ -19,6 +19,7 @@
 				{ label: 'Future', value: 'future' },
 			]"
 			@select="setDateFilter" />
+		<UserFilter :filter="setUserFilter" />
 	</BeamFilter>
 </template>
 
@@ -26,6 +27,7 @@
 import type { BeamFilterChoice } from '@stonecrop/beam'
 import { ref } from 'vue'
 
+import UserFilter from '@/components/UserFilter.vue'
 import { DemandFilter } from '@/types'
 
 const emit = defineEmits<{ filter: [filters: DemandFilter] }>()
@@ -64,6 +66,18 @@ const setDateFilter = (choice: BeamFilterChoice) => {
 			break
 		case 'future':
 			filters.value.date = ['>', todayString]
+			break
+	}
+	emit('filter', filters.value)
+}
+
+const setUserFilter = (choice: BeamFilterChoice) => {
+	switch (choice.value) {
+		case 'all':
+			delete filters.value.user
+			break
+		default:
+			filters.value.user = choice.value
 			break
 	}
 	emit('filter', filters.value)

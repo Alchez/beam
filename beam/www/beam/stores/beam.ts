@@ -75,7 +75,7 @@ export const useBeamStore = defineStore('beam', () => {
 			let newDoc: ParentDoctypesForStockTransfer
 			if (meta.doctype === 'Work Order') {
 				// check if a draft Stock Entry already exists for this work order
-				const existingEntries = await getAll<ParentDoctypesForStockTransfer[]>('Stock Entry', {
+				const existingEntries = await getAll<ParentDoctypesForStockTransfer>('Stock Entry', {
 					filters: JSON.stringify({
 						docstatus: 0,
 						work_order: id,
@@ -128,7 +128,7 @@ export const useBeamStore = defineStore('beam', () => {
 
 		const url = `/api/resource/${doctype}`
 		const response = await httpStore.get(url, params)
-		const { data }: { data: T } = await response.json()
+		const { data }: { data: T[] } = await response.json()
 		return data
 	}
 
@@ -174,7 +174,7 @@ export const useBeamStore = defineStore('beam', () => {
 		return []
 	}
 
-	const insert = async <T>(doctype: string, body: T) => {
+	const insert = async <T extends Record<string, any>>(doctype: string, body: T) => {
 		const url = `/api/resource/${doctype}`
 		const response = await httpStore.post(url, body)
 		if (response.ok) {
@@ -236,7 +236,7 @@ export const useBeamStore = defineStore('beam', () => {
 		// return a work order object with attached stock entry/ies and job card(s)
 		const response = await httpStore.post(MAPPED_STOCK_ENTRY_URL, data)
 		const { message }: { message: StockEntry } = await response.json()
-		if (!message) {
+		if (!message || !message.items || !message.items.length) {
 			toast.error('Error: Could not map Work Order to Stock Entry')
 			return
 		}

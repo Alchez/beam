@@ -64,7 +64,7 @@ onMounted(async () => {
 })
 
 const loadWarehouses = async () => {
-	const warehouses = await store.getAll<Warehouse[]>('Warehouse', {
+	const warehouses = await store.getAll<Warehouse>('Warehouse', {
 		filters: JSON.stringify([['is_group', '!=', '1']]),
 	})
 	warehouseList.value = warehouses.map(warehouse => warehouse.name)

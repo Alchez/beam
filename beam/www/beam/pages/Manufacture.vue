@@ -12,7 +12,7 @@
 	<!-- filters section -->
 	<BeamFilter>
 		<BeamFilterOption
-			:title="'Status'"
+			title="Status"
 			:choices="[
 				{ label: 'All', value: 'all' },
 				{ label: 'Not Started', value: 'not_started' },
@@ -21,25 +21,26 @@
 			]"
 			@select="filterByStatus" />
 		<BeamFilterOption
-			:title="'Start Date'"
+			title="Start Date"
 			:choices="[
 				{ label: 'All', value: 'all' },
 				{ label: 'Past', value: 'past' },
 				{ label: 'Today', value: 'today' },
 				{ label: 'Future', value: 'future' },
 			]"
-			@select="filterByDate"
-			:key="listKey" />
+			@select="filterByDate" />
+		<UserFilter :filter="filterByUser" />
 	</BeamFilter>
 
 	<!-- body section -->
-	<ListView :items="items" />
+	<ListView :items="items" :key="listKey" />
 </template>
 
 <script setup lang="ts">
 import type { BeamFilterChoice, ListViewItem } from '@stonecrop/beam'
 import { onMounted, ref } from 'vue'
 
+import UserFilter from '@/components/UserFilter.vue'
 import { useBeamStore } from '@/stores/beam'
 import type { WorkOrder } from '@/types'
 
@@ -55,7 +56,7 @@ onMounted(async () => {
 })
 
 const getItems = async () => {
-	orders.value = await store.getAll<WorkOrder[]>('Work Order', {
+	orders.value = await store.getAll<WorkOrder>('Work Order', {
 		...(Object.keys(filters.value).length && { filters: JSON.stringify(filters.value) }),
 		fields: JSON.stringify(['name', 'item_name', 'qty', 'produced_qty', 'planned_start_date', 'status']),
 		order_by: 'creation asc',
@@ -91,7 +92,7 @@ const setItems = (orders: WorkOrder[]) => {
 	})
 }
 
-const filterByStatus = (choice: BeamFilterChoice) => {
+const filterByStatus = async (choice: BeamFilterChoice) => {
 	switch (choice.value) {
 		case 'all':
 			delete filters.value.status
@@ -107,10 +108,10 @@ const filterByStatus = (choice: BeamFilterChoice) => {
 			break
 	}
 
-	getItems()
+	await getItems()
 }
 
-const filterByDate = (choice: BeamFilterChoice) => {
+const filterByDate = async (choice: BeamFilterChoice) => {
 	const today = new Date()
 	const todayString = today.toISOString().split('T')[0]
 
@@ -129,6 +130,16 @@ const filterByDate = (choice: BeamFilterChoice) => {
 			break
 	}
 
-	getItems()
+	await getItems()
+}
+
+const filterByUser = async (choice: BeamFilterChoice) => {
+	if (choice.value === 'all') {
+		delete filters.value._assign
+	} else {
+		filters.value._assign = ['like', `%${choice.value}%`]
+	}
+
+	await getItems()
 }
 </script>
