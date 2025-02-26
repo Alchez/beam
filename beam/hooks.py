@@ -30,7 +30,10 @@ web_include_js = ["beam-web.bundle.js"]
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Stock Entry": "public/js/stock_entry_custom.js"}
+doctype_js = {
+	"Stock Entry": "public/js/stock_entry_custom.js",
+	"Pick List": "public/js/pick_list.js",
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -162,6 +165,11 @@ doc_events = {
 			"beam.beam.demand.receiving.modify_receiving",
 			"beam.beam.demand.demand.modify_allocations",
 		],
+	},
+	"Pick List": {
+		"after_insert": [
+			"beam.beam.overrides.pick_list.make_stock_reservation_on_pl_save",
+		]
 	},
 }
 
