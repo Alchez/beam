@@ -215,15 +215,16 @@ class ScanHandler {
 				.then(r => {
 					if (r.length > 0) {
 						cur_frm.clear_table('items')
+						cur_frm.refresh_field('items')
 						for (let row of r) {
-							const child = cur_frm.add_child('items', {
+							cur_frm.add_child('items', {
 								...row,
 								warehouse: barcode_context.context.doc.name,
 								qty: row.actual_qty,
 								barcode: barcode_context.context.barcode,
 							})
-							cur_frm.refresh_field('items')
 						}
+						cur_frm.refresh_field('items')
 					}
 				})
 		}
