@@ -208,6 +208,24 @@ class ScanHandler {
 				frappe.model.set_value(row.doctype, row.name, 's_warehouse', barcode_context.target)
 				frappe.model.set_value(row.doctype, row.name, 't_warehouse', barcode_context.target)
 			}
+		} else if (barcode_context.doctype == 'Stock Reconciliation Item') {
+			frappe.model.set_value(cur_frm.doc.doctype, cur_frm.doc.name, 'set_warehouse', barcode_context.context.doc.name)
+			frappe
+				.xcall('beam.beam.overrides.bin.get_actual_qty', { warehouse: barcode_context.context.doc.name })
+				.then(r => {
+					if (r.length > 0) {
+						cur_frm.clear_table('items')
+						for (let row of r) {
+							const child = cur_frm.add_child('items', {
+								...row,
+								warehouse: barcode_context.context.doc.name,
+								qty: row.actual_qty,
+								barcode: barcode_context.context.barcode,
+							})
+							cur_frm.refresh_field('items')
+						}
+					}
+				})
 		}
 	}
 	add_or_increment(barcode_context) {
