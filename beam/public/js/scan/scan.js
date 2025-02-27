@@ -214,8 +214,7 @@ class ScanHandler {
 				.xcall('beam.beam.overrides.bin.get_actual_qty', { warehouse: barcode_context.context.doc.name })
 				.then(r => {
 					if (r.length > 0) {
-						cur_frm.clear_table('items')
-						cur_frm.refresh_field('items')
+						cur_frm.doc.items = []
 						for (let row of r) {
 							cur_frm.add_child('items', {
 								...row,
@@ -224,8 +223,8 @@ class ScanHandler {
 								barcode: barcode_context.context.barcode,
 							})
 						}
-						cur_frm.refresh_field('items')
 					}
+					cur_frm.refresh_field('items')
 				})
 		}
 	}
