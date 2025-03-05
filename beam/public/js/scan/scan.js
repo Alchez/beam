@@ -214,18 +214,24 @@ class ScanHandler {
 				.xcall('beam.beam.overrides.bin.get_actual_qty', { warehouse: barcode_context.context.doc.name })
 				.then(r => {
 					if (r.length > 0) {
-						cur_frm.doc.items = []
+						const items = new Map(cur_frm.doc.items.map(item => [item.item_code, item]));
 						for (let row of r) {
-							cur_frm.add_child('items', {
-								...row,
-								warehouse: barcode_context.context.doc.name,
-								qty: row.actual_qty,
-								barcode: barcode_context.context.barcode,
-							})
+							if (items.has(row.item_code)) {
+								items.get(row.item_code).qty += row.actual_qty;
+							} else {
+								items.set(row.item_code, {
+									...row,
+									warehouse: barcode_context.context.doc.name,
+									qty: row.actual_qty,
+									barcode: barcode_context.context.barcode,
+								});
+							}
 						}
+						const filteredItems = Array.from(items.values()).filter(item => item.item_code || item.qty);
+						cur_frm.set_value('items', filteredItems);
 					}
-					cur_frm.refresh_field('items')
-				})
+				});
+				cur_frm.refresh_field('items')
 		}
 	}
 	add_or_increment(barcode_context) {
