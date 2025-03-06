@@ -209,29 +209,32 @@ class ScanHandler {
 				frappe.model.set_value(row.doctype, row.name, 't_warehouse', barcode_context.target)
 			}
 		} else if (barcode_context.doctype == 'Stock Reconciliation Item') {
-			cur_frm.set_value('set_warehouse', barcode_context.context.doc.name)
+			const items = new Map(cur_frm.doc.items.map(item => [item.item_code, item]));
 			frappe
 				.xcall('beam.beam.overrides.bin.get_actual_qty', { warehouse: barcode_context.context.doc.name })
 				.then(r => {
 					if (r.length > 0) {
-						const items = new Map(cur_frm.doc.items.map(item => [item.item_code, item]));
 						for (let row of r) {
 							if (items.has(row.item_code)) {
-								items.get(row.item_code).qty += row.actual_qty;
+								const item = items.get(row.item_code);
+								if (row.actual_qty !== undefined && item) {
+									item.qty += row.actual_qty;
+								}
 							} else {
 								items.set(row.item_code, {
 									...row,
 									warehouse: barcode_context.context.doc.name,
-									qty: row.actual_qty,
+									qty: row.actual_qty || 0,
 									barcode: barcode_context.context.barcode,
 								});
 							}
 						}
 						const filteredItems = Array.from(items.values()).filter(item => item.item_code || item.qty);
 						cur_frm.set_value('items', filteredItems);
+						cur_frm.set_value('set_warehouse', barcode_context.context.doc.name)
+						cur_frm.refresh_field('items');
 					}
 				});
-				cur_frm.refresh_field('items')
 		}
 	}
 	add_or_increment(barcode_context) {
