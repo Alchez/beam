@@ -87,6 +87,7 @@ class ScanHandler {
 			} else {
 				const context = this.reduceContext()
 				frappe.xcall('beam.beam.scan.scan', { barcode: sCode, context: context, current_qty: iQty }).then(r => {
+					console.log(r)
 					if (r && r.length) {
 						if (Object.keys(frappe.boot.beam.client).includes(r[0].action)) {
 							let path = frappe.boot.beam.client[r[0].action][0]
@@ -227,7 +228,7 @@ class ScanHandler {
 							}
 						}
 
-						const filteredItems = Array.from(items.values())
+						const filteredItems = Array.from(items.values()).filter(items => items.item_code);
 						cur_frm.set_value('items', filteredItems);
 
 						cur_frm.doc.set_warehouse = barcode_context.context.doc.name
