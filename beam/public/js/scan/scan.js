@@ -230,6 +230,12 @@ class ScanHandler {
 						const filteredItems = Array.from(items.values()).filter(items => items.item_code);
 						cur_frm.set_value('items', filteredItems);
 
+						/*
+							Avoid using `cur_frm.set_value('set_warehouse', barcode_context.context.doc.name)` 
+							because it triggers `set_valuation_rate_and_qty` from `erpnext/stock_reconciliation.js`,
+							which resets the quantity to 0.
+						*/
+						
 						cur_frm.doc.set_warehouse = barcode_context.context.doc.name
 						cur_frm.refresh_field('set_warehouse')
 					}
