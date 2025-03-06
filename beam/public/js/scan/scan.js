@@ -87,7 +87,6 @@ class ScanHandler {
 			} else {
 				const context = this.reduceContext()
 				frappe.xcall('beam.beam.scan.scan', { barcode: sCode, context: context, current_qty: iQty }).then(r => {
-					console.log(r)
 					if (r && r.length) {
 						if (Object.keys(frappe.boot.beam.client).includes(r[0].action)) {
 							let path = frappe.boot.beam.client[r[0].action][0]
