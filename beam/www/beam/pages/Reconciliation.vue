@@ -34,14 +34,14 @@ import type { ControlButton, StockReconciliation } from '@/types'
 const store = useBeamStore()
 const items = ref([])
 const componentKey = ref(0)
-const reconciliation = computed<StockReconciliation>(() => {
-	const data = store.cache.mappers.reconciliation as StockReconciliation;
-	return {
-		set_warehouse: data?.set_warehouse || '',
-		items: data?.items || [],
-		purpose: data?.purpose || 'Stock Reconciliation',
-	};
-});
+const reconciliation = computed((): StockReconciliation => 
+		(store.cache.mappers['reconciliation'] as StockReconciliation) || {
+			name: '',
+			purpose: 'Stock Reconciliation',
+			items: [],
+			set_warehouse: '',
+		}
+)
 
 const warehouseList = ref<string[]>([])
 
@@ -55,3 +55,21 @@ const clearField = () =>
 
 const controlButtons = computed((): ControlButton[] => [])
 </script>
+<style>
+.reconciliation {
+	margin-bottom: 1.5em;
+}
+
+.reconciliation .autocomplete input,
+.autocomplete-results {
+	font-size: 150%;
+}
+
+.autocomplete-results {
+	padding-inline: 3px !important;
+}
+
+.reconciliation .input-wrapper label {
+	margin: calc(-2.5rem - calc(2.15rem / 2)) 0 0 1ch !important;
+}
+</style>
