@@ -12,6 +12,7 @@ import type {
 	PurchaseReceipt,
 	StockEntry,
 	StockEntryItem,
+	StockReconciliation,
 } from '@/types/index.js'
 
 export const useScanStore = defineStore('scan', () => {
@@ -175,9 +176,13 @@ export const useScanStore = defineStore('scan', () => {
 
 	const set_warehouse = (barcode_context: FormContext[]) => {
 		for (const action of barcode_context) {
-			if (action.doctype !== 'Stock Entry') {
-				return
+			if (action.doctype === 'Stock Reconciliation Item') {
+				const warehouse = action.context.doc.name;
+				(mappedDoc.value as StockReconciliation).set_warehouse = warehouse
+				store.$patch(state => (state.cache.mappers[documentId.value] = mappedDoc.value))
 			}
+
+			if (action.doctype !== 'Stock Entry') return
 
 			const source_warehouses = ['Material Consumption for Manufacture', 'Material Issue']
 			const target_warehouses = ['Material Receipt', 'Manufacture']
