@@ -35,7 +35,7 @@ const store = useBeamStore()
 const items = ref([])
 const componentKey = ref(0)
 const reconciliation = computed((): StockReconciliation => 
-		(store.cache.mappers['reconciliation'] as StockReconciliation) || {
+		(store.cache.mappers['stock-reconciliation'] as StockReconciliation) || {
 			name: '',
 			purpose: 'Stock Reconciliation',
 			items: [],
@@ -46,12 +46,12 @@ const reconciliation = computed((): StockReconciliation =>
 const warehouseList = ref<string[]>([])
 
 onMounted(async () => {
-	store.$patch(state => (state.cache.mappers.reconciliation = reconciliation.value))
+	store.$patch(state => (state.cache.mappers['stock-reconciliation'] = reconciliation.value))
 	warehouseList.value = store.warehouseList.filter(w => !w.is_group).map(w => w.name)
 })
 
 const clearField = () =>
-	store.$patch(state => (state.cache.mappers.reconciliation['set_warehouse'] = ''))
+	store.$patch(state => (state.cache.mappers['stock-reconciliation']['set_warehouse'] = ''))
 
 const controlButtons = computed((): ControlButton[] => [])
 </script>
