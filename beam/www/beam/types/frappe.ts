@@ -26,6 +26,7 @@ export type ParentDoctype = StoreMetadata & {
 	modified?: string
 	name?: string
 	owner?: string
+	company?: string
 }
 
 export type ChildDoctypeMeta = ParentDoctype & {
@@ -57,6 +58,20 @@ export type JobCardItem = ChildDoctype & {
 	required_qty?: number
 	source_warehouse?: string
 	transferred_qty?: number
+}
+
+export type StockReconciliation = ParentDoctype & {
+	purpose: 'Stock Reconciliation' | 'Opening Stock'
+
+	set_warehouse: string
+	items: StockEntryItem[]
+}
+
+export type StockReconciliationItem = ChildDoctype & {
+	warehouse?: string
+	qty: number
+	valuation_rate: number
+	item_code: string
 }
 
 export type StockEntry = ParentDoctype & {

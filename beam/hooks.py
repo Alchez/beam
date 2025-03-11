@@ -543,6 +543,7 @@ beam_mobile = {
 		"PurchaseReceipt": "./beam/beam/www/beam/pages/PurchaseReceipt.vue",
 		"Receive": "./beam/beam/www/beam/pages/Receive.vue",
 		"Repack": "./beam/beam/www/beam/pages/Repack.vue",
+		"Reconciliation": "./beam/beam/www/beam/pages/Reconciliation.vue",
 		"Ship": "./beam/beam/www/beam/pages/Ship.vue",
 		"WorkOrder": "./beam/beam/www/beam/pages/WorkOrder.vue",
 		"Workstation": "./beam/beam/www/beam/pages/Workstation.vue",
@@ -626,6 +627,12 @@ beam_mobile = {
 			"name": "repack",
 			"component": "Repack",
 			"meta": {"requiresAuth": True, "doctype": "Stock Entry", "view": "form"},
+		},
+		{
+			"path": "/stock-reconciliation",
+			"name": "stock-reconciliation",
+			"component": "Reconciliation",
+			"meta": {"requiresAuth": True, "doctype": "Stock Reconciliation", "view": "form"},
 		},
 		{
 			"path": "/:catchAll(.*)*",
