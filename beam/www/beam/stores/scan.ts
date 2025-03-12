@@ -177,8 +177,8 @@ export const useScanStore = defineStore('scan', () => {
 	const set_warehouse = (barcode_context: FormContext[]) => {
 		for (const action of barcode_context) {
 			if (action.doctype === 'Stock Reconciliation Item') {
-				const warehouse = action.context.doc.name;
-				(mappedDoc.value as StockReconciliation).set_warehouse = warehouse
+				const warehouse = action.context.doc.name
+				;(mappedDoc.value as StockReconciliation).set_warehouse = warehouse
 				store.$patch(state => (state.cache.mappers[documentId.value] = mappedDoc.value))
 			}
 

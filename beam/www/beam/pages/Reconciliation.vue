@@ -34,7 +34,8 @@ import type { ControlButton, StockReconciliation } from '@/types'
 const store = useBeamStore()
 const items = ref([])
 const componentKey = ref(0)
-const reconciliation = computed((): StockReconciliation => 
+const reconciliation = computed(
+	(): StockReconciliation =>
 		(store.cache.mappers['stock-reconciliation'] as StockReconciliation) || {
 			name: '',
 			purpose: 'Stock Reconciliation',
@@ -50,8 +51,7 @@ onMounted(async () => {
 	warehouseList.value = store.warehouseList.filter(w => !w.is_group).map(w => w.name)
 })
 
-const clearField = () =>
-	store.$patch(state => (state.cache.mappers['stock-reconciliation']['set_warehouse'] = ''))
+const clearField = () => store.$patch(state => (state.cache.mappers['stock-reconciliation']['set_warehouse'] = ''))
 
 const controlButtons = computed((): ControlButton[] => [])
 </script>
