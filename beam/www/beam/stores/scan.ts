@@ -31,7 +31,12 @@ export const useScanStore = defineStore('scan', () => {
 		if (response && response.length > 0) {
 			let fn: Function
 			const action = response[0].action
-			store.scanner.lastDocType = `${response[0].parenttype}: ${response[0].parent}`
+			if (response[0]?.context?.doc) {
+				store.scanner.lastDocType = `${response[0].context.doc.doctype}: ${response[0].context.doc.name}`
+			} else {
+				store.scanner.lastDocType = `${response[0].parenttype}: ${response[0].parent}`
+			}
+
 			const scanHooks = store.scanner.config.client
 
 			// an empty array indicates no additional client actions are registered
