@@ -18,7 +18,6 @@ export type DocActionResponse<T> = FrappeResponse<T> & {
 }
 
 export type ParentDoctype = StoreMetadata & {
-	__islocal?: number
 	creation?: string
 	docstatus?: number
 	doctype?: string
@@ -26,6 +25,7 @@ export type ParentDoctype = StoreMetadata & {
 	modified?: string
 	name?: string
 	owner?: string
+	__islocal?: number
 }
 
 export type ChildDoctypeMeta = ParentDoctype & {
@@ -47,6 +47,15 @@ export type ChildDoctype = ChildDoctypeMeta & {
 	doc?: Omit<ChildDoctype, 'doc'>
 }
 
+export type User = ParentDoctype & {
+	enabled: boolean
+	email: string
+	first_name: string
+
+	last_name?: string
+	full_name?: string
+}
+
 export type JobCard = ParentDoctype & {
 	total_time_in_mins: number
 	items?: JobCardItem[]
@@ -61,9 +70,9 @@ export type JobCardItem = ChildDoctype & {
 
 export type StockEntry = ParentDoctype & {
 	stock_entry_type: string
+	items: StockEntryItem[]
 
 	from_warehouse?: string
-	items?: StockEntryItem[]
 	purpose?: string
 	to_warehouse?: string
 }
@@ -80,6 +89,7 @@ export type StockEntryItem = ChildDoctype & {
 export type WorkOrder = ParentDoctype & {
 	planned_start_date: string
 	production_item: string
+	status: 'Draft' | 'Submitted' | 'Not Started' | 'In Process' | 'Completed' | 'Stopped' | 'Closed' | 'Cancelled'
 	qty: number
 
 	item_name?: string

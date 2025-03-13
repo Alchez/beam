@@ -25,10 +25,13 @@ export const useScanStore = defineStore('scan', () => {
 	const mappedDoc = computed(() => store.cache.mappers[documentId.value])
 
 	const scan = async (barcode: string, qty: number) => {
+		store.scanner.lastScan = barcode
+		store.scanner.lastDocType = ''
 		const response = await store.scan(barcode, qty)
 		if (response && response.length > 0) {
 			let fn: Function
 			const action = response[0].action
+			store.scanner.lastDocType = `${response[0].parenttype}: ${response[0].parent}`
 			const scanHooks = store.scanner.config.client
 
 			// an empty array indicates no additional client actions are registered
@@ -70,7 +73,7 @@ export const useScanStore = defineStore('scan', () => {
 				for (const row of existing_rows) {
 					if (action.field === 'qty') {
 						if (row.doctype === 'Stock Entry Detail') {
-							row[action.field] = Math.min((row as StockEntryItem).transfer_qty, action.target)
+							row[action.field] = Math.min((row as StockEntryItem).transfer_qty!, action.target)
 						}
 					} else {
 						row[action.field] = action.target
@@ -102,7 +105,7 @@ export const useScanStore = defineStore('scan', () => {
 				row =>
 					(row.item_code === action.context.item_code && !row.handling_unit) ||
 					row.barcode === action.context.barcode ||
-					row.item_code === action.context.doc.item_code
+					row.item_code === action.context.doc?.item_code
 			)
 
 			const itemQtyFieldMap = {
@@ -145,7 +148,7 @@ export const useScanStore = defineStore('scan', () => {
 				;(mappedDoc.value as StockEntry).items.push(item)
 			} else {
 				const item: StockEntryItem = {
-					item_code: action.context.doc.item_code,
+					item_code: action.context.doc?.item_code,
 					qty: 1,
 				}
 
@@ -162,7 +165,9 @@ export const useScanStore = defineStore('scan', () => {
 	const route = (barcode_context: ListContext[]) => {
 		// only route based on the last action in hooks
 		const action = barcode_context && barcode_context.at(-1)
-		store.router.push(action.route)
+		if (action?.route) {
+			store.router.push(action.route)
+		}
 	}
 
 	const set_item_code_and_handling_unit = (barcode_context: FormContext[]) => {
@@ -212,7 +217,7 @@ export const useScanStore = defineStore('scan', () => {
 					}
 				})
 			} else {
-				const warehouse = barcode_context[0].context.doc.name
+				const warehouse = barcode_context[0].context.doc?.name
 				if (!(mappedDoc.value as StockEntry).from_warehouse) {
 					;(mappedDoc.value as StockEntry).from_warehouse = warehouse
 				} else if (!(mappedDoc.value as StockEntry).to_warehouse) {
@@ -237,7 +242,6 @@ export const useScanStore = defineStore('scan', () => {
 		// getters
 		documentId,
 		mappedDoc,
-
 		// actions
 		scan,
 	}
