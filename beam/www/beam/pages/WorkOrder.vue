@@ -2,13 +2,16 @@
 	<!-- navigation section -->
 	<Navbar>
 		<template #title>
-			<h1>Manufacture</h1>
+			<h1>{{ workOrderId || 'Work Order' }}</h1>
 			<span v-if="stockEntry?.dirty" class="dirty">Unsaved</span>
 		</template>
 		<template #navbaraction>
 			<RouterLink :to="{ name: 'home' }">Home</RouterLink>
 		</template>
 	</Navbar>
+
+	<!-- scan section -->
+	<ScanOutput />
 
 	<!-- body section -->
 	<BeamMetadata class="box">
@@ -46,6 +49,7 @@ import { computed, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ControlButtons from '@/components/ControlButtons.vue'
+import ScanOutput from '@/components/ScanOutput.vue'
 import { useBeamStore } from '@/stores/beam'
 import type {
 	ControlButton,
