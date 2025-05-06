@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate Changelog
-        uses: agritheory/test_utils/actions/generate_changelog@4cb1c10d10ef48f0a10051b06a7721bffade608a
+        uses: agritheory/test_utils/actions/generate_changelog@3e028810b9497eaef70c4e2f18df6d63f2175cf0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
